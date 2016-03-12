@@ -54,12 +54,12 @@ single key, namely `ISO_LEFT_TAB`. Therefore, this is what my keybindings look l
 ```Lua
 awful.key({ "Mod1",           }, "Tab",
    function ()
-       alttab.switch( 1, "Alt_L", "Tab", "ISO_Left_Tab")
+       switcher.switch( 1, "Alt_L", "Tab", "ISO_Left_Tab")
    end),
  
 awful.key({ "Mod1", "Shift"   }, "Tab",
    function ()
-       alttab.switch(-1, "Alt_L", "Tab", "ISO_Left_Tab")
+       switcher.switch(-1, "Alt_L", "Tab", "ISO_Left_Tab")
    end),
 ```
 
