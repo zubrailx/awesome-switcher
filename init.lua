@@ -17,8 +17,9 @@ local tostring = tostring
 local tonumber = tonumber
 local debug = debug
 local pairs = pairs
+local unpack = unpack
 
-module("alttab")
+module("awesome-switcher-preview")
 
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
@@ -31,6 +32,9 @@ local settings = {
    preview_box_border = "#22222200",
    preview_box_fps = 30,
    preview_box_delay = 150,
+   preview_box_title_font = {"sans","italic","normal"},
+   preview_box_title_font_size_factor = 0.8,
+   preview_box_title_color = {0,0,0,1},
 
    client_opacity = false,
    client_opacity_value = 0.5,
@@ -121,7 +125,7 @@ local function preview()
 
       bigFont = bigFont - 1
    end
-   local smallFont = bigFont * 0.8
+   local smallFont = bigFont * settings.preview_box_title_font_size_factor
 
 
    -- create all the widgets
@@ -158,7 +162,7 @@ local function preview()
 	    local iconboxHeight = iconboxWidth
 
 	    -- Titles
-	    cr:select_font_face("sans", "italic", "normal")
+	    cr:select_font_face(unpack(settings.preview_box_title_font))
 	    cr:set_font_face(cr:get_font_face())
 	    cr:set_font_size(fontSize)
 	    
@@ -188,7 +192,7 @@ local function preview()
 	    tx = tx + iconboxWidth
 	    ty = h + (textboxHeight + textHeight) / 2
 
-	    cr:set_source_rgba(0,0,0,1)
+	    cr:set_source_rgba(unpack(settings.preview_box_title_color))
 	    cr:move_to(tx, ty)
 	    cr:show_text(text)
 	    cr:stroke()
