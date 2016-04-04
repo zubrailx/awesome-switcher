@@ -69,10 +69,10 @@ local function preview()
    
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(7, #altTabTable)
-   local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
+   local W = screen[mouse.screen].geometry.width -- + 2 * preview_wbox.border_width
    local w = W / n -- widget width
    local h = w * 0.75  -- widget height
-   local textboxHeight = 30
+   local textboxHeight = w * 0.125
 
    local x = screen[mouse.screen].geometry.x - preview_wbox.border_width
    local y = screen[mouse.screen].geometry.y + (screen[mouse.screen].geometry.height - h - textboxHeight) / 2
