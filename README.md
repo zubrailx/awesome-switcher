@@ -71,4 +71,6 @@ and later improved upon by [Mattias Berla](https://github.com/berlam).
 
 ## License ##
 
-TBD
+[ISC License](https://en.wikipedia.org/wiki/ISC_license), functionally
+equivalent to the simplified BSD and MIT licenses, with language removed
+deemed unnecessary by the Berne convention.
