@@ -1,7 +1,8 @@
-awesome-switcher-preview
+Awesome Alt-Tab Switcher
 ========================
 
-Integrate familiar Alt-Tab functionality in [awesome wm](https://github.com/awesomeWM/awesome).
+This plugin integrates the familiar Alt-Tab functionality in the
+[awesome window manager](https://github.com/awesomeWM/awesome).
 
 ![Screenshot of awesome-switcher-preview](screenshot.png)
 
@@ -14,22 +15,26 @@ Features:
 * Intuitive order, respecting your client history
 * Includes minimized clients (in contrast to some of the default window-switching utilies)
 
-## Installation ##
+
+Installation
+------------
 
 First clone the repo into your `$XDG_CONFIG_HOME/awesome` directory:
 
 ```Shell
-    cd "$XDG_CONFIG_HOME/awesome"
-    git clone https://github.com/berlam/awesome-switcher-preview.git awesome-switcher-preview
+    user@example:~$ cd $XDG_CONFIG_HOME/awesome
+    user@example:~/.config/awesome$ git clone https://github.com/troglobit/awesome-switcher.git
 ```
 
 Then and add the dependency to your Awesome `rc.lua` config file:
 
 ```Lua
-    local switcher = require("awesome-switcher-preview")
+    local switcher = require("awesome-switcher")
 ```
 
-## Configuration ##
+
+Configuration
+-------------
 
 Optionally edit any subset of the following settings, the defaults are:
 
@@ -64,12 +69,16 @@ Shift-Tab is captured by the keygrabber as a single key, namely
       end),
 ```
 
-## Credits ##
+
+Credits
+-------
 
 This plugin was created by [Joren Heit](https://github.com/jorenheit)
 and later improved upon by [Mattias Berla](https://github.com/berlam).
 
-## License ##
+
+License
+-------
 
 [ISC License](https://en.wikipedia.org/wiki/ISC_license), functionally
 equivalent to the simplified BSD and MIT licenses, with language removed
