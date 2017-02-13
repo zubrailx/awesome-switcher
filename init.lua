@@ -3,11 +3,11 @@ local mouse = mouse
 local screen = screen
 local wibox = require('wibox')
 local table = table
-local timer = timer
 local keygrabber = keygrabber
 local math = require('math')
 local awful = require('awful')
 local gears = require("gears")
+local timer = gears.timer
 local client = client
 awful.client = require('awful.client')
 
@@ -47,7 +47,7 @@ preview_wbox.border_width = 3
 preview_wbox.ontop = true
 preview_wbox.visible = false
 
-local preview_live_timer = timer({}) --( {timeout = 1/settings.preview_box_fps} )
+local preview_live_timer = timer({ timeout = 1/settings.preview_box_fps })
 local preview_widgets = {}
 
 local altTabTable = {}
@@ -226,7 +226,6 @@ local function preview()
    	 end
       end
 
-      preview_live_timer.timeout = 1 / settings.preview_box_fps
       preview_live_timer:connect_signal("timeout", function() 
 					   preview_widgets[i]:emit_signal("widget::updated") 
       end)
