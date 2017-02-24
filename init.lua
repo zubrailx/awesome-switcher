@@ -310,7 +310,7 @@ local function switch(dir, alt, tab, shift_tab)
    -- if not already there.
    -- This will preserve the history AND enable you to focus on minimized clients
 
-   local t = awful.tag.selected(s)
+   local t = s.selected_tag
    local all = client.get(s)
    
 
