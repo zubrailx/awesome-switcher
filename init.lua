@@ -59,11 +59,11 @@ local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
 local noicon = path .. "noicon.png"
 
 local function createPreviewText(client)
-  if client.class then
-    return " - " .. client.class
-  else
-    return " - " .. client.name
-  end
+   if client.class then
+      return " - " .. client.class
+   else
+      return " - " .. client.name
+   end
 end
 
 local function preview()
