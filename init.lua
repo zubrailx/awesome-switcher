@@ -58,6 +58,14 @@ local source = string.sub(debug.getinfo(1,'S').source, 2)
 local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
 local noicon = path .. "noicon.png"
 
+local function createPreviewText(client)
+  if client.class then
+    return " - " .. client.class
+  else
+    return " - " .. client.name
+  end
+end
+
 local function preview()
    if not settings.preview_box then return end
 
@@ -104,7 +112,7 @@ local function preview()
    local bigFont = textboxHeight / 2
    cr:set_font_size(fontSize)
    for i = 1, #leftRightTab do
-      text = " - " .. leftRightTab[i].class
+      text = createPreviewText(leftRightTab[i])
       textWidth = cr:text_extents(text).width
       textHeight = cr:text_extents(text).height
       if textWidth > maxTextWidth or textHeight > maxTextHeight then
@@ -166,8 +174,7 @@ local function preview()
 	    cr:set_font_face(cr:get_font_face())
 	    cr:set_font_size(fontSize)
 
-
-	    text = " - " .. c.class
+	    text = createPreviewText(c)
 	    textWidth = cr:text_extents(text).width
 	    textHeight = cr:text_extents(text).height
 
