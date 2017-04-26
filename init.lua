@@ -294,9 +294,14 @@ local function cycle(altTabIndex, dir)
    return altTabIndex
 end
 
-local function switch(dir, alt, tab, shift_tab)
+local function tableLength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
 
-   altTabTable = {}
+local function populateAltTabTable()
+   local newAltTabTable = {}
 
    -- Get focus history for current tag
    local s = mouse.screen;
@@ -304,7 +309,7 @@ local function switch(dir, alt, tab, shift_tab)
    local c = awful.client.focus.history.get(s, idx)
 
    while c do
-      table.insert(altTabTable, {
+      table.insert(newAltTabTable, {
          client = c,
          minimized = c.minimized,
          opacity = c.opacity
@@ -340,8 +345,8 @@ local function switch(dir, alt, tab, shift_tab)
 	 -- check if client is already in the history
 	 -- if not, add it
 	 local addToTable = true
-	 for k = 1, #altTabTable do
-	    if altTabTable[k].client == c then
+	 for k = 1, #newAltTabTable do
+	    if newAltTabTable[k].client == c then
 	       addToTable = false
 	       break
 	    end
@@ -349,7 +354,7 @@ local function switch(dir, alt, tab, shift_tab)
 
 
 	 if addToTable then
-            table.insert(altTabTable, {
+            table.insert(newAltTabTable, {
                client = c,
                minimized = c.minimized,
                opacity = c.opacity
@@ -357,6 +362,13 @@ local function switch(dir, alt, tab, shift_tab)
 	 end
       end
    end
+
+   altTabTable = newAltTabTable
+end
+
+local function switch(dir, alt, tab, shift_tab)
+
+   populateAltTabTable()
 
    if #altTabTable == 0 then
       return
@@ -405,7 +417,7 @@ local function switch(dir, alt, tab, shift_tab)
 
 	    if key == "Escape" then
 	       for i in #altTabTable do
-		  i.client.opacity = i.opacity
+		  altTabTable[i].client.opacity = altTabTable[i].opacity
 	       end
 	       keygrabber.stop()
 	       return
