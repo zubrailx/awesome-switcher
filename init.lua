@@ -66,14 +66,18 @@ local function createPreviewText(client)
    end
 end
 
+local function updatePreview()
+   for i = 1, #preview_widgets do
+      preview_widgets[i]:emit_signal("widget::updated")
+   end
+end
+
 local function preview()
    if not settings.preview_box then return end
 
    -- Apply settings
    preview_wbox:set_bg(settings.preview_box_bg)
    preview_wbox.border_color = settings.preview_box_border
-
-   local preview_widgets = {}
 
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(7, #altTabTable)
@@ -187,7 +191,6 @@ local function preview()
 	    sx = iconboxWidth / icon.width
 	    sy = iconboxHeight  / icon.height
 
-
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
 	    cr:set_source_surface(icon, 0, 0)
@@ -232,13 +235,10 @@ local function preview()
 	    cr:fill()
    	 end
       end
-
-      preview_live_timer.timeout = 1 / settings.preview_box_fps
-      preview_live_timer:connect_signal("timeout", function()
-					   preview_widgets[i]:emit_signal("widget::updated")
-      end)
-
    end
+
+   preview_live_timer.timeout = 1 / settings.preview_box_fps
+   preview_live_timer:connect_signal("timeout", updatePreview)
 
    -- Spacers left and right
    local spacer = wibox.widget.base.make_widget()
