@@ -103,10 +103,10 @@ local function preview()
    end
 
    for i = 1, nLeft do
-      table.insert(leftRightTab, altTabTable[#altTabTable - nLeft + i])
+      table.insert(leftRightTab, altTabTable[#altTabTable - nLeft + i].client)
    end
    for i = 1, nRight do
-      table.insert(leftRightTab, altTabTable[i])
+      table.insert(leftRightTab, altTabTable[i].client)
    end
 
    -- determine fontsize -> find maximum classname-length
@@ -154,7 +154,7 @@ local function preview()
 	    local a = 0.8
 	    local overlay = 0.6
 	    local fontSize = smallFont
-	    if c == altTabTable[altTabIndex] then
+	    if c == altTabTable[altTabIndex].client then
 	       a = 0.9
 	       overlay = 0
 	       fontSize = bigFont
@@ -259,20 +259,20 @@ local function preview()
    preview_wbox:set_widget(preview_layout)
 end
 
-local function clientOpacity(altTabTable, altTabIndex)
+local function clientOpacity(altTabIndex)
    if not settings.client_opacity then return end
 
-   for i,c in pairs(altTabTable) do
+   for i,data in pairs(altTabTable) do
       if i == altTabIndex then
-	 c.opacity = 1
+	 data.client.opacity = 1
       elseif applyOpacity then
-	 c.opacity = settings.client_opacity_value
+	 data.client.opacity = settings.client_opacity_value
       end
    end
 end
 
 
-local function cycle(altTabTable, altTabIndex, dir)
+local function cycle(altTabIndex, dir)
    -- Switch to next client
    altTabIndex = altTabIndex + dir
    if altTabIndex > #altTabTable then
@@ -281,14 +281,14 @@ local function cycle(altTabTable, altTabIndex, dir)
       altTabIndex = #altTabTable -- wrap around
    end
 
-   altTabTable[altTabIndex].minimized = false
+   altTabTable[altTabIndex].client.minimized = false
 
    if not settings.preview_box and not settings.client_opacity then
-      client.focus = altTabTable[altTabIndex]
+      client.focus = altTabTable[altTabIndex].client
    end
 
    if settings.client_opacity then
-      clientOpacity(altTabTable, altTabIndex)
+      clientOpacity(altTabIndex)
    end
 
    return altTabIndex
@@ -297,8 +297,6 @@ end
 local function switch(dir, alt, tab, shift_tab)
 
    altTabTable = {}
-   local altTabMinimized = {}
-   local altTabOpacity = {}
 
    -- Get focus history for current tag
    local s = mouse.screen;
@@ -306,9 +304,12 @@ local function switch(dir, alt, tab, shift_tab)
    local c = awful.client.focus.history.get(s, idx)
 
    while c do
-      table.insert(altTabTable, c)
-      table.insert(altTabMinimized, c.minimized)
-      table.insert(altTabOpacity, c.opacity)
+      table.insert(altTabTable, {
+         client = c,
+         minimized = c.minimized,
+         opacity = c.opacity
+      })
+
       idx = idx + 1
       c = awful.client.focus.history.get(s, idx)
    end
@@ -340,7 +341,7 @@ local function switch(dir, alt, tab, shift_tab)
 	 -- if not, add it
 	 local addToTable = true
 	 for k = 1, #altTabTable do
-	    if altTabTable[k] == c then
+	    if altTabTable[k].client == c then
 	       addToTable = false
 	       break
 	    end
@@ -348,9 +349,11 @@ local function switch(dir, alt, tab, shift_tab)
 
 
 	 if addToTable then
-	    table.insert(altTabTable, c)
-	    table.insert(altTabMinimized, c.minimized)
-	    table.insert(altTabOpacity, c.opacity)
+            table.insert(altTabTable, {
+               client = c,
+               minimized = c.minimized,
+               opacity = c.opacity
+            })
 	 end
       end
    end
@@ -358,8 +361,8 @@ local function switch(dir, alt, tab, shift_tab)
    if #altTabTable == 0 then
       return
    elseif #altTabTable == 1 then
-      altTabTable[1].minimized = false
-      altTabTable[1]:raise()
+      altTabTable[1].client.minimized = false
+      altTabTable[1].client:raise()
       return
    end
 
@@ -372,7 +375,7 @@ local function switch(dir, alt, tab, shift_tab)
    previewDelayTimer:connect_signal("timeout", function()
 				       preview_wbox.visible = true
 				       previewDelayTimer:stop()
-				       preview(altTabTable, altTabIndex)
+				       preview()
    end)
    previewDelayTimer:start()
    preview_live_timer:start()
@@ -383,7 +386,7 @@ local function switch(dir, alt, tab, shift_tab)
    opacityDelayTimer:connect_signal("timeout", function()
 				       applyOpacity = true
 				       opacityDelayTimer:stop()
-				       clientOpacity(altTabTable, altTabIndex)
+				       clientOpacity(altTabIndex)
    end)
    opacityDelayTimer:start()
 
@@ -401,8 +404,8 @@ local function switch(dir, alt, tab, shift_tab)
 	    opacityDelayTimer:stop()
 
 	    if key == "Escape" then
-	       for i,c in pairs(altTabTable) do
-		  c.opacity = altTabOpacity[i]
+	       for i in #altTabTable do
+		  i.client.opacity = i.opacity
 	       end
 	       keygrabber.stop()
 	       return
@@ -411,41 +414,41 @@ local function switch(dir, alt, tab, shift_tab)
 	    -- Raise clients in order to restore history
 	    local c
 	    for i = 1, altTabIndex - 1 do
-	       c = altTabTable[altTabIndex - i]
-	       if not altTabMinimized[i] then
+	       c = altTabTable[altTabIndex - i].client
+	       if not altTabTable[i].minimized then
 		  c:raise()
 		  client.focus = c
 	       end
 	    end
 
 	    -- raise chosen client on top of all
-	    c = altTabTable[altTabIndex]
+	    c = altTabTable[altTabIndex].client
 	    c:raise()
 	    client.focus = c
 
 	    -- restore minimized clients
 	    for i = 1, #altTabTable do
-	       if i ~= altTabIndex and altTabMinimized[i] then
-		  altTabTable[i].minimized = true
+	       if i ~= altTabIndex and altTabTable[i].minimized then
+		  altTabTable[i].client.minimized = true
 	       end
-	       altTabTable[i].opacity = altTabOpacity[i]
+	       altTabTable[i].client.opacity = altTabtable[i].opacity
 	    end
 
 	    keygrabber.stop()
 
       	    -- Move to next client on each Tab-press
 	 elseif (key == tab or key == "Right") and event == "press" then
-	    altTabIndex = cycle(altTabTable, altTabIndex, 1)
+	    altTabIndex = cycle(altTabIndex, 1)
 
       	    -- Move to previous client on Shift-Tab
 	 elseif (key == shift_tab or key == "Left") and event == "press" then
-	    altTabIndex = cycle(altTabTable, altTabIndex, -1)
+	    altTabIndex = cycle(altTabIndex, -1)
 	 end
       end
    )
 
    -- switch to next client
-   altTabIndex = cycle(altTabTable, altTabIndex, dir)
+   altTabIndex = cycle(altTabIndex, dir)
 
 end -- function altTab
 
