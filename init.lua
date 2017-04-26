@@ -58,6 +58,108 @@ local source = string.sub(debug.getinfo(1,'S').source, 2)
 local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
 local noicon = path .. "noicon.png"
 
+-- simple function for counting the size of a table
+local function tableLength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+-- this function returns the list of clients to be shown.
+local function getClients()
+   local clients = {}
+
+   -- Get focus history for current tag
+   local s = mouse.screen;
+   local idx = 0
+   local c = awful.client.focus.history.get(s, idx)
+
+   while c do
+      table.insert(clients, c)
+
+      idx = idx + 1
+      c = awful.client.focus.history.get(s, idx)
+   end
+
+   -- Minimized clients will not appear in the focus history
+   -- Find them by cycling through all clients, and adding them to the list
+   -- if not already there.
+   -- This will preserve the history AND enable you to focus on minimized clients
+
+   local t = awful.tag.selected(s)
+   local all = client.get(s)
+
+   for i = 1, #all do
+      local c = all[i]
+      local ctags = c:tags();
+
+      -- check if the client is on the current tag
+      local isCurrentTag = false
+      for j = 1, #ctags do
+	 if t == ctags[j] then
+	    isCurrentTag = true
+	    break
+	 end
+      end
+
+      if isCurrentTag then
+	 -- check if client is already in the history
+	 -- if not, add it
+	 local addToTable = true
+	 for k = 1, #clients do
+	    if clients[k] == c then
+	       addToTable = false
+	       break
+	    end
+	 end
+
+
+	 if addToTable then
+            table.insert(clients, c)
+	 end
+      end
+   end
+
+   return clients
+end
+
+-- here we populate altTabTable using the list of clients taken from
+-- getClients(). In case we have altTabTable with some value, the list of the
+-- old known clients is restored.
+local function populateAltTabTable()
+   local clients = getClients()
+
+   if tableLength(altTabTable) then
+      for ci = 1, #clients do
+         for ti = 1, #altTabTable do
+            if altTabTable[ti].client == clients[ci] then
+             altTabTable[ti].client.opacity = altTabTable[ti].opacity
+              altTabTable[ti].client.minimized = altTabTable[ti].minimized
+              break
+           end
+        end
+      end
+   end
+
+   altTabTable = {}
+
+   for i = 1, #clients do
+      table.insert(altTabTable, {
+         client = clients[i],
+         minimized = clients[i].minimized,
+         opacity = clients[i].opacity
+      })
+   end
+end
+
+-- If the length of list of clients is not equal to the length of altTabTable,
+-- we need to repopulate the array and update the UI. This function does this
+-- check.
+local function clientsHaveChanged()
+   local clients = getClients()
+   return tableLength(clients) ~= tableLength(altTabTable)
+end
+
 local function createPreviewText(client)
    if client.class then
       return " - " .. client.class
@@ -66,12 +168,7 @@ local function createPreviewText(client)
    end
 end
 
-local function updatePreview()
-   for i = 1, #preview_widgets do
-      preview_widgets[i]:emit_signal("widget::updated")
-   end
-end
-
+-- Preview is created here.
 local function preview()
    if not settings.preview_box then return end
 
@@ -139,6 +236,7 @@ local function preview()
    end
    local smallFont = bigFont * settings.preview_box_title_font_size_factor
 
+   preview_widgets = {}
 
    -- create all the widgets
    for i = 1, #leftRightTab do
@@ -237,9 +335,6 @@ local function preview()
       end
    end
 
-   preview_live_timer.timeout = 1 / settings.preview_box_fps
-   preview_live_timer:connect_signal("timeout", updatePreview)
-
    -- Spacers left and right
    local spacer = wibox.widget.base.make_widget()
    spacer.fit = function(leftSpacer, width, height)
@@ -258,6 +353,32 @@ local function preview()
 
    preview_wbox:set_widget(preview_layout)
 end
+
+-- This is called any settings.preview_box_fps milliseconds. In case the list
+-- of clients is changed, we need to redraw the whole preview box. Otherwise, a
+-- simple widget::updated signal is enough
+local function updatePreview()
+   if clientsHaveChanged() then
+     populateAltTabTable()
+     preview()
+   end
+
+   for i = 1, #preview_widgets do
+      preview_widgets[i]:emit_signal("widget::updated")
+   end
+end
+
+-- This starts the timer for updating and it shows the preview UI.
+local function showPreview()
+   preview_live_timer.timeout = 1 / settings.preview_box_fps
+   preview_live_timer:connect_signal("timeout", updatePreview)
+   preview_live_timer:start()
+
+   preview()
+
+   preview_wbox.visible = true
+end
+
 
 local function clientOpacity(altTabIndex)
    if not settings.client_opacity then return end
@@ -292,78 +413,6 @@ local function cycle(dir)
    end
 end
 
-local function tableLength(T)
-  local count = 0
-  for _ in pairs(T) do count = count + 1 end
-  return count
-end
-
-local function populateAltTabTable()
-   local newAltTabTable = {}
-
-   -- Get focus history for current tag
-   local s = mouse.screen;
-   local idx = 0
-   local c = awful.client.focus.history.get(s, idx)
-
-   while c do
-      table.insert(newAltTabTable, {
-         client = c,
-         minimized = c.minimized,
-         opacity = c.opacity
-      })
-
-      idx = idx + 1
-      c = awful.client.focus.history.get(s, idx)
-   end
-
-   -- Minimized clients will not appear in the focus history
-   -- Find them by cycling through all clients, and adding them to the list
-   -- if not already there.
-   -- This will preserve the history AND enable you to focus on minimized clients
-
-   local t = awful.tag.selected(s)
-   local all = client.get(s)
-
-
-   for i = 1, #all do
-      local c = all[i]
-      local ctags = c:tags();
-
-      -- check if the client is on the current tag
-      local isCurrentTag = false
-      for j = 1, #ctags do
-	 if t == ctags[j] then
-	    isCurrentTag = true
-	    break
-	 end
-      end
-
-      if isCurrentTag then
-	 -- check if client is already in the history
-	 -- if not, add it
-	 local addToTable = true
-	 for k = 1, #newAltTabTable do
-	    if newAltTabTable[k].client == c then
-	       addToTable = false
-	       break
-	    end
-	 end
-
-
-	 if addToTable then
-            table.insert(newAltTabTable, {
-               client = c,
-               minimized = c.minimized,
-               opacity = c.opacity
-            })
-	 end
-      end
-   end
-
-   altTabTable = newAltTabTable
-end
-
 local function switch(dir, alt, tab, shift_tab)
 
    populateAltTabTable()
@@ -383,12 +432,10 @@ local function switch(dir, alt, tab, shift_tab)
    local previewDelay = settings.preview_box_delay / 1000
    local previewDelayTimer = timer({timeout = previewDelay})
    previewDelayTimer:connect_signal("timeout", function()
-				       preview_wbox.visible = true
 				       previewDelayTimer:stop()
-				       preview()
+                                       showPreview()
    end)
    previewDelayTimer:start()
-   preview_live_timer:start()
 
    -- opacity delay timer
    local opacityDelay = settings.client_opacity_delay / 1000
@@ -414,37 +461,37 @@ local function switch(dir, alt, tab, shift_tab)
 	    opacityDelayTimer:stop()
 
 	    if key == "Escape" then
-	       for i in #altTabTable do
-		  altTabTable[i].client.opacity = altTabTable[i].opacity
-	       end
-	       keygrabber.stop()
-	       return
-	    end
+               for i = 1, #altTabTable do
+                  altTabTable[i].client.opacity = altTabTable[i].opacity
+                  altTabTable[i].client.minimized = altTabTable[i].minimized
+               end
+            else
+               -- Raise clients in order to restore history
+               local c
+               for i = 1, altTabIndex - 1 do
+                  c = altTabTable[altTabIndex - i].client
+                  if not altTabTable[i].minimized then
+                     c:raise()
+                     client.focus = c
+                  end
+               end
 
-	    -- Raise clients in order to restore history
-	    local c
-	    for i = 1, altTabIndex - 1 do
-	       c = altTabTable[altTabIndex - i].client
-	       if not altTabTable[i].minimized then
-		  c:raise()
-		  client.focus = c
-	       end
-	    end
+               -- raise chosen client on top of all
+               c = altTabTable[altTabIndex].client
+               c:raise()
+               client.focus = c
 
-	    -- raise chosen client on top of all
-	    c = altTabTable[altTabIndex].client
-	    c:raise()
-	    client.focus = c
+               -- restore minimized clients
+               for i = 1, #altTabTable do
+                  if i ~= altTabIndex and altTabTable[i].minimized then
+                     altTabTable[i].client.minimized = true
+                  end
+                  altTabTable[i].client.opacity = altTabtable[i].opacity
+               end
+            end
 
-	    -- restore minimized clients
-	    for i = 1, #altTabTable do
-	       if i ~= altTabIndex and altTabTable[i].minimized then
-		  altTabTable[i].client.minimized = true
-	       end
-	       altTabTable[i].client.opacity = altTabtable[i].opacity
-	    end
-
-	    keygrabber.stop()
+            keygrabber.stop()
+            return
 
       	    -- Move to next client on each Tab-press
 	 elseif (key == tab or key == "Right") and event == "press" then
