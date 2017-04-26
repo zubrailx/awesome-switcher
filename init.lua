@@ -272,7 +272,7 @@ local function clientOpacity(altTabIndex)
 end
 
 
-local function cycle(altTabIndex, dir)
+local function cycle(dir)
    -- Switch to next client
    altTabIndex = altTabIndex + dir
    if altTabIndex > #altTabTable then
@@ -290,8 +290,6 @@ local function cycle(altTabIndex, dir)
    if settings.client_opacity then
       clientOpacity(altTabIndex)
    end
-
-   return altTabIndex
 end
 
 local function tableLength(T)
@@ -450,17 +448,17 @@ local function switch(dir, alt, tab, shift_tab)
 
       	    -- Move to next client on each Tab-press
 	 elseif (key == tab or key == "Right") and event == "press" then
-	    altTabIndex = cycle(altTabIndex, 1)
+	    cycle(1)
 
       	    -- Move to previous client on Shift-Tab
 	 elseif (key == shift_tab or key == "Left") and event == "press" then
-	    altTabIndex = cycle(altTabIndex, -1)
+	    cycle(-1)
 	 end
       end
    )
 
    -- switch to next client
-   altTabIndex = cycle(altTabIndex, dir)
+   cycle(dir)
 
 end -- function altTab
 
