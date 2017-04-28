@@ -52,7 +52,6 @@ local preview_widgets = {}
 
 local altTabTable = {}
 local altTabIndex = 1
-local applyOpacity = false
 
 local source = string.sub(debug.getinfo(1,'S').source, 2)
 local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
@@ -380,13 +379,13 @@ local function showPreview()
 end
 
 
-local function clientOpacity(altTabIndex)
+local function clientOpacity()
    if not settings.client_opacity then return end
 
    for i,data in pairs(altTabTable) do
       if i == altTabIndex then
 	 data.client.opacity = 1
-      elseif applyOpacity then
+      else
 	 data.client.opacity = settings.client_opacity_value
       end
    end
@@ -409,7 +408,7 @@ local function cycle(dir)
    end
 
    if settings.client_opacity then
-      clientOpacity(altTabIndex)
+      clientOpacity()
    end
 end
 
@@ -441,9 +440,8 @@ local function switch(dir, alt, tab, shift_tab)
    local opacityDelay = settings.client_opacity_delay / 1000
    local opacityDelayTimer = timer({timeout = opacityDelay})
    opacityDelayTimer:connect_signal("timeout", function()
-				       applyOpacity = true
 				       opacityDelayTimer:stop()
-				       clientOpacity(altTabIndex)
+				       clientOpacity()
    end)
    opacityDelayTimer:start()
 
@@ -455,7 +453,6 @@ local function switch(dir, alt, tab, shift_tab)
 	 -- Stop alt-tabbing when the alt-key is released
 	 if key == alt or key == "Escape" and event == "release" then
 	    preview_wbox.visible = false
-	    applyOpacity = false
 	    preview_live_timer:stop()
 	    previewDelayTimer:stop()
 	    opacityDelayTimer:stop()
