@@ -406,7 +406,7 @@ local function cycle(dir)
       client.focus = altTabTable[altTabIndex].client
    end
 
-   if settings.client_opacity then
+   if settings.client_opacity and preview_wbox.visible then
       clientOpacity()
    end
 end
