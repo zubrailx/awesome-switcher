@@ -50,7 +50,6 @@ Optionally edit any subset of the following settings, the defaults are:
     
     switcher.settings.client_opacity = false,                             -- opacity for unselected clients
     switcher.settings.client_opacity_value = 0.5,                         -- alpha-value
-    switcher.settings.client_opacity_delay = 150,                         -- delay in ms
 ```
 
 Then add key-bindings.  On my particular system, and I guess most,

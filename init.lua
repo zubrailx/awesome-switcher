@@ -38,7 +38,6 @@ local settings = {
 
    client_opacity = false,
    client_opacity_value = 0.5,
-   client_opacity_delay = 150,
 }
 
 -- Create a wibox to contain all the client-widgets
@@ -436,16 +435,6 @@ local function switch(dir, alt, tab, shift_tab)
    end)
    previewDelayTimer:start()
 
-   -- opacity delay timer
-   local opacityDelay = settings.client_opacity_delay / 1000
-   local opacityDelayTimer = timer({timeout = opacityDelay})
-   opacityDelayTimer:connect_signal("timeout", function()
-				       opacityDelayTimer:stop()
-				       clientOpacity()
-   end)
-   opacityDelayTimer:start()
-
-
    -- Now that we have collected all windows, we should run a keygrabber
    -- as long as the user is alt-tabbing:
    keygrabber.run(
@@ -455,7 +444,6 @@ local function switch(dir, alt, tab, shift_tab)
 	    preview_wbox.visible = false
 	    preview_live_timer:stop()
 	    previewDelayTimer:stop()
-	    opacityDelayTimer:stop()
 
 	    if key == "Escape" then
                for i = 1, #altTabTable do
