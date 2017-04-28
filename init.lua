@@ -37,8 +37,9 @@ local settings = {
    preview_box_title_color = {0,0,0,1},
 
    client_opacity = false,
+   client_opacity_value_selected = 1,
+   client_opacity_value_in_focus = 0.5,
    client_opacity_value = 0.5,
-   client_opacity_delay = 150,
 }
 
 -- Create a wibox to contain all the client-widgets
@@ -52,7 +53,6 @@ local preview_widgets = {}
 
 local altTabTable = {}
 local altTabIndex = 1
-local applyOpacity = false
 
 local source = string.sub(debug.getinfo(1,'S').source, 2)
 local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
@@ -368,6 +368,32 @@ local function updatePreview()
    end
 end
 
+local function clientOpacity()
+   if not settings.client_opacity then return end
+
+   local opacity = settings.client_opacity_value
+   if opacity > 1 then opacity = 1 end
+   for i,data in pairs(altTabTable) do
+      data.client.opacity = opacity
+   end
+
+   if client.focus == altTabTable[altTabIndex].client then
+      -- Let's normalize the value up to 1.
+      local opacityFocusSelected = settings.client_opacity_value_selected + settings.client_opacity_value_in_focus
+      if opacityFocusSelected > 1 then opacityFocusSelected = 1 end
+      client.focus.opacity = opacityFocusSelected
+   else
+      -- Let's normalize the value up to 1.
+      local opacityFocus = settings.client_opacity_value_in_focus
+      if opacityFocus > 1 then opacityFocus = 1 end
+      local opacitySelected = settings.client_opacity_value_selected
+      if opacitySelected > 1 then opacitySelected = 1 end
+
+      client.focus.opacity = opacityFocus
+      altTabTable[altTabIndex].client.opacity = opacitySelected
+   end
+end
+
 -- This starts the timer for updating and it shows the preview UI.
 local function showPreview()
    preview_live_timer.timeout = 1 / settings.preview_box_fps
@@ -375,23 +401,10 @@ local function showPreview()
    preview_live_timer:start()
 
    preview()
-
    preview_wbox.visible = true
+
+   clientOpacity()
 end
-
-
-local function clientOpacity(altTabIndex)
-   if not settings.client_opacity then return end
-
-   for i,data in pairs(altTabTable) do
-      if i == altTabIndex then
-	 data.client.opacity = 1
-      elseif applyOpacity then
-	 data.client.opacity = settings.client_opacity_value
-      end
-   end
-end
-
 
 local function cycle(dir)
    -- Switch to next client
@@ -408,8 +421,8 @@ local function cycle(dir)
       client.focus = altTabTable[altTabIndex].client
    end
 
-   if settings.client_opacity then
-      clientOpacity(altTabIndex)
+   if settings.client_opacity and preview_wbox.visible then
+      clientOpacity()
    end
 end
 
@@ -437,17 +450,6 @@ local function switch(dir, alt, tab, shift_tab)
    end)
    previewDelayTimer:start()
 
-   -- opacity delay timer
-   local opacityDelay = settings.client_opacity_delay / 1000
-   local opacityDelayTimer = timer({timeout = opacityDelay})
-   opacityDelayTimer:connect_signal("timeout", function()
-				       applyOpacity = true
-				       opacityDelayTimer:stop()
-				       clientOpacity(altTabIndex)
-   end)
-   opacityDelayTimer:start()
-
-
    -- Now that we have collected all windows, we should run a keygrabber
    -- as long as the user is alt-tabbing:
    keygrabber.run(
@@ -455,10 +457,8 @@ local function switch(dir, alt, tab, shift_tab)
 	 -- Stop alt-tabbing when the alt-key is released
 	 if key == alt or key == "Escape" and event == "release" then
 	    preview_wbox.visible = false
-	    applyOpacity = false
 	    preview_live_timer:stop()
 	    previewDelayTimer:stop()
-	    opacityDelayTimer:stop()
 
 	    if key == "Escape" then
                for i = 1, #altTabTable do
@@ -486,7 +486,7 @@ local function switch(dir, alt, tab, shift_tab)
                   if i ~= altTabIndex and altTabTable[i].minimized then
                      altTabTable[i].client.minimized = true
                   end
-                  altTabTable[i].client.opacity = altTabtable[i].opacity
+                  altTabTable[i].client.opacity = altTabTable[i].opacity
                end
             end
 
