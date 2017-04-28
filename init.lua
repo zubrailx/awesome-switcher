@@ -471,7 +471,7 @@ local function switch(dir, alt, tab, shift_tab)
                   if i ~= altTabIndex and altTabTable[i].minimized then
                      altTabTable[i].client.minimized = true
                   end
-                  altTabTable[i].client.opacity = altTabtable[i].opacity
+                  altTabTable[i].client.opacity = altTabTable[i].opacity
                end
             end
 
