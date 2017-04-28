@@ -49,7 +49,8 @@ Optionally edit any subset of the following settings, the defaults are:
     switcher.settings.preview_box_title_color = {0,0,0,1},                -- the font color
     
     switcher.settings.client_opacity = false,                             -- opacity for unselected clients
-    switcher.settings.client_opacity_value = 0.5,                         -- alpha-value
+    switcher.settings.client_opacity_value = 0.8,                         -- alpha-value
+    switcher.settings.client_opacity_value_in_focus = 0.2,                -- alpha-value for the current in-focus client
 ```
 
 Then add key-bindings.  On my particular system, and I guess most,

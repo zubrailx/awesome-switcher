@@ -37,7 +37,8 @@ local settings = {
    preview_box_title_color = {0,0,0,1},
 
    client_opacity = false,
-   client_opacity_value = 0.5,
+   client_opacity_value = 0.8,
+   client_opacity_value_in_focus = 0.2,
 }
 
 -- Create a wibox to contain all the client-widgets
@@ -366,6 +367,30 @@ local function updatePreview()
    end
 end
 
+local function clientOpacity()
+   if not settings.client_opacity then return end
+
+   for i,data in pairs(altTabTable) do
+      data.client.opacity = 0
+   end
+
+   if client.focus == altTabTable[altTabIndex].client then
+      -- Let's normalize the value up to 1.
+      local opacityFocusSelected = settings.client_opacity_value + settings.client_opacity_value_in_focus
+      if opacityFocusSelected > 1 then opacityFocusSelected = 1 end
+      client.focus.opacity = opacityFocusSelected
+   else
+      -- Let's normalize the value up to 1.
+      local opacityFocus = settings.client_opacity_value_in_focus
+      if opacityFocus > 1 then opacityFocus = 1 end
+      local opacitySelected = settings.client_opacity_value
+      if opacitySelected > 1 then opacitySelected = 1 end
+
+      client.focus.opacity = opacityFocus
+      altTabTable[altTabIndex].client.opacity = opacitySelected
+   end
+end
+
 -- This starts the timer for updating and it shows the preview UI.
 local function showPreview()
    preview_live_timer.timeout = 1 / settings.preview_box_fps
@@ -373,23 +398,10 @@ local function showPreview()
    preview_live_timer:start()
 
    preview()
-
    preview_wbox.visible = true
+
+   clientOpacity()
 end
-
-
-local function clientOpacity()
-   if not settings.client_opacity then return end
-
-   for i,data in pairs(altTabTable) do
-      if i == altTabIndex then
-	 data.client.opacity = 1
-      else
-	 data.client.opacity = settings.client_opacity_value
-      end
-   end
-end
-
 
 local function cycle(dir)
    -- Switch to next client
