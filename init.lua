@@ -37,8 +37,9 @@ local settings = {
    preview_box_title_color = {0,0,0,1},
 
    client_opacity = false,
-   client_opacity_value = 0.8,
-   client_opacity_value_in_focus = 0.2,
+   client_opacity_value_selected = 1,
+   client_opacity_value_in_focus = 0.5,
+   client_opacity_value = 0.5,
 }
 
 -- Create a wibox to contain all the client-widgets
@@ -370,20 +371,22 @@ end
 local function clientOpacity()
    if not settings.client_opacity then return end
 
+   local opacity = settings.client_opacity_value
+   if opacity > 1 then opacity = 1 end
    for i,data in pairs(altTabTable) do
-      data.client.opacity = 0
+      data.client.opacity = opacity
    end
 
    if client.focus == altTabTable[altTabIndex].client then
       -- Let's normalize the value up to 1.
-      local opacityFocusSelected = settings.client_opacity_value + settings.client_opacity_value_in_focus
+      local opacityFocusSelected = settings.client_opacity_value_selected + settings.client_opacity_value_in_focus
       if opacityFocusSelected > 1 then opacityFocusSelected = 1 end
       client.focus.opacity = opacityFocusSelected
    else
       -- Let's normalize the value up to 1.
       local opacityFocus = settings.client_opacity_value_in_focus
       if opacityFocus > 1 then opacityFocus = 1 end
-      local opacitySelected = settings.client_opacity_value
+      local opacitySelected = settings.client_opacity_value_selected
       if opacitySelected > 1 then opacitySelected = 1 end
 
       client.focus.opacity = opacityFocus
