@@ -60,6 +60,29 @@ local source = string.sub(debug.getinfo(1,'S').source, 2)
 local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
 local noicon = path .. "noicon.png"
 
+local function cycle(altTabTable, altTabIndex, dir)
+   -- Switch to next client
+   altTabIndex = altTabIndex + dir
+   while altTabIndex > #altTabTable do
+      altTabIndex = altTabIndex - #altTabTable -- wrap around
+   end
+   while altTabIndex < 1 do
+      altTabIndex = altTabIndex + #altTabTable -- wrap around
+   end
+
+   altTabTable[altTabIndex].minimized = false
+
+   if not settings.preview_box and not settings.client_opacity then
+      client.focus = altTabTable[altTabIndex]
+   end
+
+   if settings.client_opacity then
+      clientOpacity(altTabTable, altTabIndex)
+   end
+
+   return altTabIndex
+end
+
 local function preview()
    if not settings.preview_box then return end
 
@@ -82,6 +105,7 @@ local function preview()
 
    -- create a list that holds the clients to preview, from left to right
    local leftRightTab = {}
+   local leftRightTabToAltTabIndex = {} -- save mapping from leftRightTab to altTabTable as well
    local nLeft
    local nRight
    if #altTabTable == 2 then
@@ -94,9 +118,11 @@ local function preview()
 
    for i = 1, nLeft do
       table.insert(leftRightTab, altTabTable[#altTabTable - nLeft + i])
+      table.insert(leftRightTabToAltTabIndex, #altTabTable - nLeft + i)
    end
    for i = 1, nRight do
       table.insert(leftRightTab, altTabTable[i])
+      table.insert(leftRightTabToAltTabIndex, i)
    end
 
    -- determine fontsize -> find maximum classname-length
@@ -137,10 +163,11 @@ local function preview()
    	 return w, h
       end
       
-      preview_widgets[i].draw = function(preview_widget, preview_wbox, cr, width, height)
-   	 if width ~= 0 and height ~= 0 then
+      local c = leftRightTab[i]
 
-   	    local c = leftRightTab[i]
+      preview_widgets[i].draw = function(preview_widget, preview_wbox, cr, width, height)
+       if width ~= 0 and height ~= 0 then
+
 	    local a = 0.8
 	    local overlay = 0.6
 	    local fontSize = smallFont
@@ -228,6 +255,11 @@ local function preview()
    	 end
       end
 
+      -- Add mouse handler
+      preview_widgets[i]:connect_signal("mouse::enter", function()
+         altTabIndex = cycle(altTabTable, altTabIndex, leftRightTabToAltTabIndex[i] - altTabIndex)
+      end)
+
       preview_live_timer:connect_signal("timeout", function() 
 					   preview_widgets[i]:emit_signal("widget::updated") 
       end)
@@ -263,29 +295,6 @@ local function clientOpacity(altTabTable, altTabIndex)
 	 c.opacity = settings.client_opacity_value
       end
    end
-end
-
-
-local function cycle(altTabTable, altTabIndex, dir)
-   -- Switch to next client
-   altTabIndex = altTabIndex + dir
-   if altTabIndex > #altTabTable then
-      altTabIndex = 1 -- wrap around
-   elseif altTabIndex < 1 then
-      altTabIndex = #altTabTable -- wrap around
-   end
-
-   altTabTable[altTabIndex].minimized = false
-   
-   if not settings.preview_box and not settings.client_opacity then
-      client.focus = altTabTable[altTabIndex]
-   end
-
-   if settings.client_opacity then
-      clientOpacity(altTabTable, altTabIndex)
-   end
-
-   return altTabIndex
 end
 
 local function switch(dir, alt, tab, shift_tab)
