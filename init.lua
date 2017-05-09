@@ -424,6 +424,8 @@ local function cycle(dir)
    if settings.client_opacity and preview_wbox.visible then
       clientOpacity()
    end
+
+   updatePreview()
 end
 
 local function switch(dir, alt, tab, shift_tab)
