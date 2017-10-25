@@ -415,6 +415,8 @@ local function cycle(dir)
       altTabIndex = #altTabTable -- wrap around
    end
 
+   updatePreview()
+
    altTabTable[altTabIndex].client.minimized = false
 
    if not settings.preview_box and not settings.client_opacity then
@@ -424,8 +426,6 @@ local function cycle(dir)
    if settings.client_opacity and preview_wbox.visible then
       clientOpacity()
    end
-
-   updatePreview()
 end
 
 local function switch(dir, alt, tab, shift_tab)
@@ -458,9 +458,12 @@ local function switch(dir, alt, tab, shift_tab)
       function (mod, key, event)
 	 -- Stop alt-tabbing when the alt-key is released
 	 if key == alt or key == "Escape" and event == "release" then
-	    preview_wbox.visible = false
-	    preview_live_timer:stop()
-	    previewDelayTimer:stop()
+            if preview_wbox.visible == true then
+               preview_wbox.visible = false
+               preview_live_timer:stop()
+            else
+	       previewDelayTimer:stop()
+            end
 
 	    if key == "Escape" then
                for i = 1, #altTabTable do
