@@ -1,19 +1,20 @@
 awesome-switcher
 ================
 
-This plugin integrates the familiar Alt-Tab functionality in the
+This plugin integrates the familiar application switcher functionality in the
 [awesome window manager](https://github.com/awesomeWM/awesome).
 
-![Screenshot of awesome-switcher](screenshot.png)
+![Screenshot of awesome-switcher](screenshot.gif)
 
 Features:
 
 * Live previews while alt-tabbing AND/OR Opacity effects for unselected clients
 * Easily adjustable settings
-* No previews when alt-tab is released within some time-frame
-* Backward cycle using shift
+* No previews when modifier (e.g.: Alt) is released within some time-frame
+* Backward cycle using second modifier (e.g.: Shift)
 * Intuitive order, respecting your client history
 * Includes minimized clients (in contrast to some of the default window-switching utilies)
+* Preview selectable by mouse
 
 ## Installation ##
 
@@ -63,7 +64,7 @@ back with Alt-Shift-Tab. Therefore, this is what my keybindings look like:
     
     awful.key({ "Mod1", "Shift"   }, "Tab",
       function ()
-          switcher.switch(-1, "Mod1", "Alt_L", "Shift" "Tab")
+          switcher.switch(-1, "Mod1", "Alt_L", "Shift", "Tab")
       end),
 ```
 
