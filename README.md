@@ -1,40 +1,37 @@
-Awesome Alt-Tab Switcher
-========================
+awesome-switcher
+================
 
-This plugin integrates the familiar Alt-Tab functionality in the
+This plugin integrates the familiar application switcher functionality in the
 [awesome window manager](https://github.com/awesomeWM/awesome).
 
-![Screenshot of awesome-switcher-preview](screenshot.png)
+![Screenshot of awesome-switcher](screenshot.gif)
 
 Features:
 
 * Live previews while alt-tabbing AND/OR Opacity effects for unselected clients
 * Easily adjustable settings
-* No previews when alt-tab is released within some time-frame
-* Backward cycle using shift
+* No previews when modifier (e.g.: Alt) is released within some time-frame
+* Backward cycle using second modifier (e.g.: Shift)
 * Intuitive order, respecting your client history
 * Includes minimized clients (in contrast to some of the default window-switching utilies)
+* Preview selectable by mouse
 
+## Installation ##
 
-Installation
-------------
-
-First clone the repo into your `$XDG_CONFIG_HOME/awesome` directory:
+Clone the repo into your `$XDG_CONFIG_HOME/awesome` directory:
 
 ```Shell
-    user@example:~$ cd $XDG_CONFIG_HOME/awesome
-    user@example:~/.config/awesome$ git clone https://github.com/troglobit/awesome-switcher.git
+cd "$XDG_CONFIG_HOME/awesome"
+git clone https://github.com/berlam/awesome-switcher.git awesome-switcher
 ```
 
-Then and add the dependency to your Awesome `rc.lua` config file:
+Then add the dependency to your Awesome `rc.lua` config file:
 
 ```Lua
     local switcher = require("awesome-switcher")
 ```
 
-
-Configuration
--------------
+## Configuration ##
 
 Optionally edit any subset of the following settings, the defaults are:
 
@@ -52,35 +49,33 @@ Optionally edit any subset of the following settings, the defaults are:
     switcher.settings.client_opacity_value = 0.5,                         -- alpha-value for any client
     switcher.settings.client_opacity_value_in_focus = 0.5,                -- alpha-value for the client currently in focus
     switcher.settings.client_opacity_value_selected = 1,                  -- alpha-value for the selected client
+
+    switcher.settings.cycle_raise_client = true,                          -- raise clients on cycle
 ```
 
-Then add key-bindings.  On my particular system, and I guess most,
-Shift-Tab is captured by the keygrabber as a single key, namely
-`ISO_LEFT_TAB`. Therefore, this is what my keybindings look like:
+Then add key-bindings. On my particular system I switch to the next client by Alt-Tab and
+back with Alt-Shift-Tab. Therefore, this is what my keybindings look like:
 
 ```Lua
     awful.key({ "Mod1",           }, "Tab",
       function ()
-          switcher.switch( 1, "Alt_L", "Tab", "ISO_Left_Tab")
+          switcher.switch( 1, "Mod1", "Alt_L", "Shift", "Tab")
       end),
     
     awful.key({ "Mod1", "Shift"   }, "Tab",
       function ()
-          switcher.switch(-1, "Alt_L", "Tab", "ISO_Left_Tab")
+          switcher.switch(-1, "Mod1", "Alt_L", "Shift", "Tab")
       end),
 ```
 
+Please keep in mind that "Mod1" and "Shift" are actual modifiers and not real keys.
+This is important for the keygrabber as the keygrabber uses "Shift_L" for a pressed (left) "Shift" key.
 
-Credits
--------
+## Credits ##
 
 This plugin was created by [Joren Heit](https://github.com/jorenheit)
-and later improved upon by [Mattias Berla](https://github.com/berlam).
+and later improved upon by [Matthias Berla](https://github.com/berlam).
 
+## License ##
 
-License
--------
-
-[ISC License](https://en.wikipedia.org/wiki/ISC_license), functionally
-equivalent to the simplified BSD and MIT licenses, with language removed
-deemed unnecessary by the Berne convention.
+See [LICENSE](LICENSE).
