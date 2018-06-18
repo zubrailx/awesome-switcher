@@ -17,9 +17,9 @@ local tostring = tostring
 local tonumber = tonumber
 local debug = debug
 local pairs = pairs
-local unpack = unpack
+local unpack = unpack or table.unpack
 
-module("awesome-switcher-preview")
+--module("awesome-switcher-preview")
 
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
