@@ -60,11 +60,13 @@ back with Alt-Shift-Tab. Therefore, this is what my keybindings look like:
     awful.key({ "Mod1",           }, "Tab",
       function ()
           switcher.switch( 1, "Mod1", "Alt_L", "Shift", "Tab")
+          -- switcher.switch( 1, "Mod1", { "Alt_L", "Alt_R" }, "Shift", "Tab")
       end),
     
     awful.key({ "Mod1", "Shift"   }, "Tab",
       function ()
           switcher.switch(-1, "Mod1", "Alt_L", "Shift", "Tab")
+          -- switcher.switch(-1, "Mod1", { "Alt_L", "Alt_R" }, "Shift", "Tab")
       end),
 ```
 
