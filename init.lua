@@ -215,7 +215,7 @@ function _M.cycle(dir)
   -- Switch to next client
   _M.altTabIndex = _M.altTabIndex + dir
   if _M.altTabIndex > #_M.altTabTable then
-    _M.altTabIndex = 1 -- wrap around
+    _M.altTabIndex = 1               -- wrap around
   elseif _M.altTabIndex < 1 then
     _M.altTabIndex = #_M.altTabTable -- wrap around
   end
@@ -247,8 +247,8 @@ function _M.preview()
   -- Make the wibox the right size, based on the number of clients
   local n = math.max(7, #_M.altTabTable)
   local W = screen[mouse.screen].geometry.width -- + 2 * _M.preview_wbox.border_width
-  local w = W / n -- widget width
-  local h = w * 0.75 -- widget height
+  local w = W / n                               -- widget width
+  local h = w * 0.75                            -- widget height
   local textboxHeight = w * 0.125
 
   local x = screen[mouse.screen].geometry.x - _M.preview_wbox.border_width
@@ -318,7 +318,6 @@ function _M.preview()
     local c = leftRightTab[i]
     _M.preview_widgets[i].draw = function(preview_widget, preview_wbox, cr, width, height)
       if width ~= 0 and height ~= 0 then
-
         local a = 0.8
         local overlay = 0.6
         local fontSize = smallFont
@@ -474,8 +473,7 @@ function _M.switch(dir, mod_key1, release_key, mod_key2, key_switch)
       -- Stop alt-tabbing when the alt-key is released
       if gears.table.hasitem(mod, mod_key1) then
         if (gears.table.hasitem(release_klist, key) or key == "Escape")
-          and event == "release" then
-
+            and event == "release" then
           if _M.preview_wbox.visible == true then
             _M.preview_wbox.visible = false
             _M.preview_live_timer:stop()
@@ -514,7 +512,6 @@ function _M.switch(dir, mod_key1, release_key, mod_key2, key_switch)
           end
 
           keygrabber.stop()
-
         elseif key == key_switch and event == "press" then
           if gears.table.hasitem(mod, mod_key2) then
             -- Move to previous client on Shift-Tab
@@ -530,7 +527,6 @@ function _M.switch(dir, mod_key1, release_key, mod_key2, key_switch)
 
   -- switch to next client
   _M.cycle(dir)
-
 end -- function altTab
 
 return { switch = _M.switch, settings = _M.settings }
